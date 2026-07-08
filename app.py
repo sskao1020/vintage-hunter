@@ -90,7 +90,7 @@ def scrape_carousell_taiwan(keyword):
     return items
 
 def scrape_shopee_taiwan(keyword):
-    """【台灣蝦皮】公開網頁輕量爬蟲"""
+    """【台灣蝦皮】公開網頁輕量爬蟲（全面解放版）"""
     safe_keyword = urllib.parse.quote(keyword)
     url = f"https://shopee.tw/api/v4/search/search_items?keyword={safe_keyword}&limit=30&newest=0&by=ctime&order=desc"
     headers = {
@@ -115,6 +115,7 @@ def scrape_shopee_taiwan(keyword):
                     price = f"${int(price_raw / 100000):,}" if price_raw else "未顯示"
                     item_url = f"https://shopee.tw/product/{shop_id}/{item_id}"
                     
+                    # 🔓 注意：這裡原本有隱藏的 47501 過濾邏輯，現在已被徹底移除！
                     items.append({"platform": "🧡 台灣蝦皮", "name": name, "price": price, "url": item_url})
     except Exception as e:
         st.warning(f"台灣蝦皮連線異常 (可能觸發防爬蟲機制): {e}")
@@ -133,11 +134,11 @@ st.markdown("---")
 st.sidebar.header("🎛️ 獵人核心設定")
 search_keyword = st.sidebar.text_input("搜尋關鍵字", value="牛仔褲")
 
-# 尺寸白名單 (因為變成了萬用搜尋，這邊增加提示：如果搜尋一般物品，請把腰圍多選標籤全部清空)
+# 尺寸白名單
 selected_sizes = st.sidebar.multiselect(
     "腰圍白名單 (搜尋非復刻牛仔褲時，請清空此欄)",
     options=["W29", "W30", "W31", "W32", "W33", "W34", "W36"],
-    default=[] # 預設留空，讓「牛仔褲」搜尋更順暢
+    default=[] 
 )
 
 # 排除關鍵字
@@ -148,10 +149,10 @@ exclude_keywords = [k.strip().upper() for k in exclude_input.replace("，", ",")
 platforms_to_search = st.sidebar.multiselect(
     "出動目標市場",
     options=["🇯🇵 Yahoo日拍", "🧡 台灣蝦皮", "🎠 旋轉拍賣"],
-    default=["🧡 台灣蝦皮"] # 預設先鎖定在蝦皮，你可以視情況自己勾選
+    default=["🧡 台灣蝦皮"] 
 )
 
-enable_line = st.sidebar.toggle("同步發送 LINE 通知", value=False) # 萬用搜尋時建議預設關閉通知，免得訊息爆炸
+enable_line = st.sidebar.toggle("同步發送 LINE 通知", value=False) 
 
 # 🎯 網頁中央主畫面
 if st.sidebar.button("🚀 立即發動全球手動掃描", use_container_width=True):
@@ -180,15 +181,11 @@ if st.sidebar.button("🚀 立即發動全球手動掃描", use_container_width=
     for item in all_raw_items:
         name_upper = item["name"].upper()
         
-        # 1. 📢 基礎型號雙重防線 (已成功關閉！現在什麼關鍵字都能搜尋了)
-        # if "47501" not in name_upper and "1947" not in name_upper:
-        #     continue
-            
-        # 2. 黑名單排除
+        # 1. 黑名單排除
         if any(black in name_upper for black in exclude_keywords):
             continue
             
-        # 3. 尺寸白名單過濾
+        # 2. 尺寸白名單過濾
         if selected_sizes and not any(size in name_upper for size in selected_sizes):
             continue
             
