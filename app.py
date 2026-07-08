@@ -123,21 +123,21 @@ def scrape_shopee_taiwan(keyword):
 # ==========================================
 # 🎨 Streamlit 網頁美學介面
 # ==========================================
-st.set_page_config(page_title="全球古著獵人系統", page_icon="🕵️‍♂️", layout="wide")
+st.set_page_config(page_title="全球多功能獵人系統", page_icon="🕵️‍♂️", layout="wide")
 
 st.title("🕵️‍♂️ Global Vintage Hunter Dashboard")
-st.caption("跨國次級市場情報官 — 整合日拍、蝦皮、旋轉拍賣，精準狙擊")
+st.caption("跨國次級市場情報官 — 整合日拍、蝦皮、旋轉拍賣，萬物皆可狙擊")
 st.markdown("---")
 
 # 🤖 建立左側邊欄 控制台
 st.sidebar.header("🎛️ 獵人核心設定")
-search_keyword = st.sidebar.text_input("搜尋關鍵字", value="LVC 47501")
+search_keyword = st.sidebar.text_input("搜尋關鍵字", value="牛仔褲")
 
-# 尺寸白名單
+# 尺寸白名單 (因為變成了萬用搜尋，這邊增加提示：如果搜尋一般物品，請把腰圍多選標籤全部清空)
 selected_sizes = st.sidebar.multiselect(
-    "腰圍白名單 (留空代表不限尺寸)",
+    "腰圍白名單 (搜尋非復刻牛仔褲時，請清空此欄)",
     options=["W29", "W30", "W31", "W32", "W33", "W34", "W36"],
-    default=["W31", "W32", "W33"],
+    default=[] # 預設留空，讓「牛仔褲」搜尋更順暢
 )
 
 # 排除關鍵字
@@ -148,10 +148,10 @@ exclude_keywords = [k.strip().upper() for k in exclude_input.replace("，", ",")
 platforms_to_search = st.sidebar.multiselect(
     "出動目標市場",
     options=["🇯🇵 Yahoo日拍", "🧡 台灣蝦皮", "🎠 旋轉拍賣"],
-    default=["🇯🇵 Yahoo日拍", "🧡 台灣蝦皮", "🎠 旋轉拍賣"]
+    default=["🧡 台灣蝦皮"] # 預設先鎖定在蝦皮，你可以視情況自己勾選
 )
 
-enable_line = st.sidebar.toggle("同步發送 LINE 通知", value=True)
+enable_line = st.sidebar.toggle("同步發送 LINE 通知", value=False) # 萬用搜尋時建議預設關閉通知，免得訊息爆炸
 
 # 🎯 網頁中央主畫面
 if st.sidebar.button("🚀 立即發動全球手動掃描", use_container_width=True):
@@ -180,9 +180,9 @@ if st.sidebar.button("🚀 立即發動全球手動掃描", use_container_width=
     for item in all_raw_items:
         name_upper = item["name"].upper()
         
-        # 1. 基礎型號雙重防線
-        if "47501" not in name_upper and "1947" not in name_upper:
-            continue
+        # 1. 📢 基礎型號雙重防線 (已成功關閉！現在什麼關鍵字都能搜尋了)
+        # if "47501" not in name_upper and "1947" not in name_upper:
+        #     continue
             
         # 2. 黑名單排除
         if any(black in name_upper for black in exclude_keywords):
@@ -196,9 +196,9 @@ if st.sidebar.button("🚀 立即發動全球手動掃描", use_container_width=
 
     # ------ 🎨 網頁結果視覺呈現 ------
     if not valid_items:
-        st.warning(" 掃描完成。目前全球市場上，沒有符合您尺寸與過濾條件的新上架商品。")
+        st.warning(" 掃描完成。目前市場上沒有符合您過濾條件的最新商品。")
     else:
-        st.success(f"🎉 聯網回報：成功捕捉到 {len(valid_items)} 件完美符合條件的夢幻獵物！")
+        st.success(f"🎉 聯網回報：成功捕捉到 {len(valid_items)} 件最新上架商品！")
         
         for item in valid_items:
             with st.container(border=True):
@@ -221,4 +221,4 @@ if st.sidebar.button("🚀 立即發動全球手動掃描", use_container_width=
                 send_line_message(msg)
                 time.sleep(0.5)
 else:
-    st.info("💡 請在左側主控台調整您的全球獵場設定，隨時點擊『立即發動全球手動掃描』收割三方市場情報。")
+    st.info("💡 請在左側主控台調整您的全球獵場設定，隨時點擊『立即發動全球手動掃描』。")
